@@ -11,5 +11,6 @@ export const NavList = styled.ul`
 `;
 export const Header = styled.header`
   padding: 20px;
+  background-color: gray;
 `;
 export const NavItem = styled.li``;

@@ -1,24 +1,28 @@
 import { useState } from "react";
+import {
+  useAddToFavoritesMutation,
+  useRemoveFromFavoritesMutation,
+} from "../../Api";
 import sprite from "../../images/sprite.svg";
 import { Button, ButtonIcon } from "./LikeButton.styled";
-import { AddToFavorites, removeFromFavorites } from "../../Api";
 
-export const LikeButton = ({ id, mockapiId }) => {
-  const [isLiked, setIsLiked] = useState(mockapiId !== null);
-  const [newMockapiId, setNewMockapiId] = useState(mockapiId);
+export const LikeButton = ({ car, id }) => {
+  const [addToFavorites] = useAddToFavoritesMutation();
+  const [removeFromFavorites] = useRemoveFromFavoritesMutation();
+
+  const [isLiked, setIsLiked] = useState(false);
 
   const handleButtonLikeClick = async () => {
     try {
       if (isLiked) {
-        await removeFromFavorites(newMockapiId);
-        setNewMockapiId(null);
+        await removeFromFavorites(id);
+        setIsLiked(false);
       } else {
-        const { data } = await AddToFavorites(id);
-        setNewMockapiId(data.mockapiId);
+        const response = await addToFavorites(car);
+        setIsLiked(true);
       }
-      setIsLiked(!isLiked);
     } catch (error) {
-      console.log(error);
+      console.error("Помилка при роботі з обраними об'єктами:", error);
     }
   };
 

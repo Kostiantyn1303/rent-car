@@ -11,7 +11,7 @@ import {
   CarinfoItems,
   StyledButton,
 } from "./CarCard.styled";
-export const CarCard = ({ car, mockapiId }) => {
+const CarCard = ({ car }) => {
   const {
     id,
     make,
@@ -33,7 +33,7 @@ export const CarCard = ({ car, mockapiId }) => {
     <>
       <CarItems>
         <ImgContainer>
-          <LikeButton id={id} mockapiId={mockapiId} />
+          <LikeButton id={car.mockapiId} car={car} />
           <Img src={car.img} alt="car" />
         </ImgContainer>
         <DescriptionContainer>
@@ -63,3 +63,4 @@ export const CarCard = ({ car, mockapiId }) => {
     </>
   );
 };
+export default CarCard;

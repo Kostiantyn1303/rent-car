@@ -1,57 +1,41 @@
-import axios from "axios";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const BASE_URL = "https://6489751f5fa58521caafa128.mockapi.io";
-const limit = 8;
 
-export const GetAll = async (page) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/advert`, {
-      params: {
-        page,
-        limit,
-      },
-    });
-    return response;
-  } catch (error) {
-    console.log("Помилка отримання даних з сервера:", error);
-  }
-};
+export const api = createApi({
+  baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
+  endpoints: (builder) => ({
+    getAll: builder.query({
+      query: (page) => `advert?page=${page}&limit=8`,
+      providesTags: ["Advert"],
+    }),
+    getAllWithoutLimit: builder.query("advert"),
 
-export const GetAllWithoutLimit = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/advert`);
-    return response;
-  } catch (error) {
-    console.log("Помилка отримання даних з сервера:", error);
-  }
-};
+    getAllFavorites: builder.query({
+      query: () => "favorites",
+    }),
+    addToFavorites: builder.mutation({
+      query: (car) => ({
+        url: `favorites`,
+        method: "POST",
+        body: car,
+      }),
+      invalidatesTags: ["favorites"], // Оновлюємо кеш при додаванні об'єкта у вибрані
+    }),
+    removeFromFavorites: builder.mutation({
+      query: (id) => ({
+        url: `favorites/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["favorites"], // Оновлюємо кеш при видаленні об'єкта з вибраних
+    }),
+  }),
+});
 
-export const GetAllFavoritesId = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/favorites`);
-    return response;
-  } catch (error) {
-    console.log("Помилка отримання даних з сервера:", error);
-  }
-};
-
-export const AddToFavorites = async (id) => {
-  try {
-    const response = await axios.post(`${BASE_URL}/favorites`, {
-      id,
-      mockapiId: 9002,
-    });
-    return response;
-  } catch (error) {
-    console.log("Помилка додавання даних на сервер:", error);
-  }
-};
-
-export const removeFromFavorites = async (mockapiId) => {
-  try {
-    const response = await axios.delete(`${BASE_URL}/favorites/${mockapiId}`);
-    return response;
-  } catch (error) {
-    console.log("Помилка видалення даних з серверу:", error);
-  }
-};
+export const {
+  useGetAllQuery,
+  useGetAllWithoutLimitQuery,
+  useGetAllFavoritesQuery,
+  useAddToFavoritesMutation,
+  useRemoveFromFavoritesMutation,
+} = api;

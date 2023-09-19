@@ -4,7 +4,6 @@ import Catalog from "./pages/Catalog";
 import HomePage from "./pages/HomePage";
 import FavoritesPage from "./pages/Favorites";
 import Layout from "./components/SharedLayout/Layout";
-
 import { MainContainer } from "./App.styled";
 
 function App() {

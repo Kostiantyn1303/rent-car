@@ -1,69 +1,57 @@
 import { CatalogContainer } from "./Catalog.styled";
-import { useEffect, useState } from "react";
-import { CarCard } from "../components/CarCard/CarCard";
+import { useState, useEffect } from "react";
+import CarCard from "../components/CarCard/CarCard";
 import CarBrandDropdown from "../components/SideBar/BrandDropDawn";
-import { GetAll, GetAllFavoritesId } from "../Api";
 import { CarList, ButtonLoadMore } from "./Catalog.styled";
+import { useGetAllQuery } from "../Api";
+
+const ITEMS_PER_PAGE = 8;
+
 const Catalog = () => {
-  const [carsArray, setCarsArray] = useState([]);
   const [page, setPage] = useState(1);
-  const [favoriesIdArray, setFavoriesIdArray] = useState([]);
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await GetAllFavoritesId();
-        if (response) setFavoriesIdArray(response.data);
-      } catch (error) {
-        console.error("Помилка отримання обраних об'єктів:", error);
-      }
-    })();
-  }, []);
+  const { data, error, isLoading } = useGetAllQuery(page, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  const [loadedCars, setLoadedCars] = useState([]);
+  const [hasMoreCars, setHasMoreCars] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await GetAll(page);
-        if (response) {
-          if (page === 1) setCarsArray(response.data);
-          if (page > 1) setCarsArray((prev) => [...prev, ...response.data]);
-        }
-      } catch (error) {
-        console.error("Помилка отримання всіх об'єктів:", error);
-      }
-    })();
-  }, [page]);
+    if (data) {
+      setLoadedCars((prevCars) => [...prevCars, ...data]);
+    }
+  }, [data]);
 
   useEffect(() => {
-    if (carsArray.length <= 8) return;
-    window.scrollBy({
-      top: 400,
-      behavior: "smooth",
-    });
-  }, [carsArray]);
+    if (data && data.length < ITEMS_PER_PAGE) {
+      setHasMoreCars(false);
+    } else {
+      setHasMoreCars(true);
+    }
+  }, [data, page]);
 
   const handleLoadMoreClick = () => {
     setPage((prev) => prev + 1);
   };
 
+  if (isLoading && !loadedCars.length) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
   return (
     <CatalogContainer>
       <CarBrandDropdown />
-      {carsArray.length > 0 && (
-        <CarList sx={{ mb: 12.5 }}>
-          {carsArray.map((car) => {
-            let mockapiId = null;
-            const favoriteItem = favoriesIdArray.find(
-              (item) => item.id === car.id
-            );
-            if (favoriteItem) {
-              mockapiId = favoriteItem.mockapiId;
-            }
-            return <CarCard key={car.id} car={car} mockapiId={mockapiId} />;
-          })}
-        </CarList>
-      )}
+      <CarList sx={{ mb: 12.5 }}>
+        {loadedCars.map((car) => (
+          <CarCard key={car.id} car={car} />
+        ))}
+      </CarList>
 
-      {carsArray.length > 0 && carsArray.length < 40 && (
+      {hasMoreCars && (
         <ButtonLoadMore type="button" onClick={handleLoadMoreClick}>
           Load more
         </ButtonLoadMore>
@@ -71,4 +59,5 @@ const Catalog = () => {
     </CatalogContainer>
   );
 };
+
 export default Catalog;
